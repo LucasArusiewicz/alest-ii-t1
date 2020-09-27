@@ -63,6 +63,10 @@ export class Processador {
     return ++this.numCores
   }
 
+  static pool (quantidade: number): Processador[] {
+    return new Array(quantidade).fill(null).map(() => new Processador())
+  }
+
   executar (processo: Processo): void {
     if (!this.estaLivre()) {
       throw new Error('Processador Ocupado!')

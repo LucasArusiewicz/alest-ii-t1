@@ -1,7 +1,7 @@
 import { Caso, Processador, Processo } from './schema';
 import { inspect } from 'util';
 
-const processadores: Processador[] = new Array(10).fill(null).map(() => new Processador())
+const processadores = Processador.pool(2)
 
 // let a = new Processo('teste', 30)
 // processadores[4].executar(a)
