@@ -20,70 +20,6 @@ export class Caso {
   }
 }
 
-export class Processo {
-  nome: string;
-  ticks: number;
-
-  constructor (nome: string, ticks: number) {
-    this.nome = nome
-    this.ticks = ticks
-  }
-
-  toString (): string {
-    return `${this.nome}_${this.ticks}`
-  }
-}
-
-export class Processador {
-  static numCores = 0;
-  id: number;
-  ticks: number;
-  processo: Processo | null;
-
-  constructor () {
-    this.id = Processador.novoId()
-    this.ticks = 0
-    this.processo = null
-  }
-
-  static novoId (): number {
-    return ++this.numCores
-  }
-
-  static pool (quantidade: number): Processador[] {
-    return new Array(quantidade).fill(null).map(() => new Processador())
-  }
-
-  executar (processo: Processo): void {
-    if (!this.estaLivre()) {
-      throw new Error('Processador Ocupado!')
-    }
-
-    this.processo = processo
-  }
-
-  tick (): void {
-    if (this.estaLivre()) return
-
-    this.ticks++
-
-    if (this.ticks === this.processo?.ticks) {
-      console.log(`${this.processo.toString()} finalizado!`)
-      this.processo = null
-      this.ticks = 0
-    }
-  }
-
-  estaLivre (): boolean {
-    return !this.processo
-  }
-
-  ticksRestantes (): number {
-    if (!this.processo) return 0
-    return this.processo.ticks - this.ticks
-  }
-}
-
 export class No {
   pai: No | null;
   valor: string;
@@ -179,6 +115,7 @@ export class Arvore {
 
     const pai = no.pai
     pai.delFilho(no)
+    this.delIndice(no)
 
     for (const key in no.filhos) {
       if (Object.prototype.hasOwnProperty.call(no.filhos, key)) {
@@ -197,11 +134,87 @@ export class Arvore {
     this.indice[no.valor] = no
   }
 
+  delIndice (no: No): void {
+    delete this.indice[no.valor]
+  }
+
   pesquisaNo (no: No): No | null {
     return this.indice[no.valor]
   }
 
   pesquisaValor (valor: string): No | null {
     return this.indice[valor]
+  }
+}
+
+export class Processo {
+  nome: string;
+  ticks: number;
+  no: No;
+
+  constructor (no: No) {
+    const [nome, ticks] = no.valor.split('_')
+    this.nome = nome
+    this.ticks = parseInt(ticks)
+    this.no = no
+  }
+
+  toString (): string {
+    return `${this.nome}_${this.ticks}`
+  }
+}
+
+export class Processador {
+  static numCores = 0;
+  id: number;
+  ticks: number;
+  processo: Processo | null;
+
+  constructor () {
+    this.id = Processador.novoId()
+    this.ticks = 0
+    this.processo = null
+  }
+
+  static novoId (): number {
+    return ++this.numCores
+  }
+
+  static pool (quantidade: number): Processador[] {
+    return new Array(quantidade).fill(null).map(() => new Processador())
+  }
+
+  executar (processo: Processo): void {
+    if (!this.estaLivre()) {
+      throw new Error('Processador Ocupado!')
+    }
+
+    this.processo = processo
+    // console.log(`[CPU${this.id}]${this.processo.toString()} iniciou!`)
+  }
+
+  tick (qntTicks?: number): Processo | null {
+    if (this.estaLivre()) return null
+
+    this.ticks += qntTicks || 1
+
+    if (this.ticks === this.processo?.ticks) {
+      // console.log(`[CPU${this.id}]${this.processo.toString()} finalizado!`)
+      const aux = this.processo
+      this.processo = null
+      this.ticks = 0
+
+      return aux
+    }
+    return null
+  }
+
+  estaLivre (): boolean {
+    return !this.processo
+  }
+
+  ticksRestantes (): number {
+    if (!this.processo) return 0
+    return this.processo.ticks - this.ticks
   }
 }
