@@ -13,6 +13,8 @@ Dependencias para compilar:
 Executar programa no Node.Js:
 - `node . <nome_do_arquivo.txt> <MIN|Max>`
 
+> Os arquivos de leitura precisam estar dentro da pasta /src/casos
+
 Exemplo:
 - `node . casoTeste.txt MIN`
 - `node . caso100.txt MAX`
