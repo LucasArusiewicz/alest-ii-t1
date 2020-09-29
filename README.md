@@ -1,5 +1,7 @@
 # Trabalho 1 de ALEST II
 
+### Implementação realizada dentro da pasta /src
+
 Dependencias para compilar:
  - Ter instalado o [Node.Js](https://nodejs.org/en/), [NPM](https://www.npmjs.com/)(por padrão é instalado junto com o Node.js) ou [Yarn](https://yarnpkg.com/) (de preferencia o Yarn)
  - Instalar TypeScipt Global: `npm install -g typescript` ou `yarn add -g typescript`
