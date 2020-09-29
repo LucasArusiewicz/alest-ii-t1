@@ -1,7 +1,15 @@
 # Trabalho 1 de ALEST II
 
-Informações:
- - A linha inicial indica quantos processadores vão ser usados para as tarefas: `# Proc n`
- - Cada terefa é representada da seguinte forma: `<nome_tarefa>_<tempo_execucao>`
- - Só um proessador pode trabalhar em cada tarefa e a tarefa é terminada sem interrupção
- - Critério de desempate caso seja o tempo: ordem alfabética
+Dependencias:
+ - Ter instalado o [Node.Js](https://nodejs.org/en/), [NPM](https://www.npmjs.com/)(por padrão é instalado junto com o Node.js) ou [Yarn](https://yarnpkg.com/) (de preferencia o Yarn)
+ - Rodar na pasta, `npm install` ou  `yarn`
+
+Com o Node.Js já instalado, executar na pasta:
+
+`node . <nome_do_arquivo.txt> <MIN|Max>`
+
+Exemplo:
+
+`node . casoTeste.txt MIN`
+
+`node . caso100.txt MAX`

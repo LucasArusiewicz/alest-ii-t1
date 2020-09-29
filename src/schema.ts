@@ -45,14 +45,15 @@ export class No {
 
 export class Arvore {
   raiz: No;
-  indice: {[key: string]: No}
-  fnPrioridade: (a: No, b: No) => number;
+  indice: {[key: string]: No};
+  fnPoliticaPrioridade: (a: No, b: No) => number;
   constructor (prioridadeMin?: boolean) {
     this.raiz = new No()
     this.indice = {}
 
+    // Caso a política seja priorizar as menores tarefas
     if (prioridadeMin) {
-      this.fnPrioridade = (a: No, b: No) => {
+      this.fnPoliticaPrioridade = (a: No, b: No) => {
         const [nomeA, tempoA] = a.valor.split('_')
         const [nomeB, tempoB] = b.valor.split('_')
         if (parseInt(tempoA) < parseInt(tempoB)) {
@@ -65,7 +66,7 @@ export class Arvore {
         return nomeA.localeCompare(nomeB)
       }
     } else {
-      this.fnPrioridade = (a: No, b: No) => {
+      this.fnPoliticaPrioridade = (a: No, b: No) => {
         const [nomeA, tempoA] = a.valor.split('_')
         const [nomeB, tempoB] = b.valor.split('_')
         if (parseInt(tempoA) > parseInt(tempoB)) {
@@ -88,35 +89,50 @@ export class Arvore {
   }
 
   add (filho: No, pai: No): void {
-    // const resFilho = this.pesquisaNo(filho)
-    let novoPai = this.pesquisaNo(pai)
-    let novoFilho = this.pesquisaNo(filho)
-    if (!novoPai) {
-      novoPai = pai
-      this.raiz.addFilho(novoPai)
-      novoPai.pai = this.raiz
-      this.addIndice(novoPai)
-    }
-    if (!novoFilho) {
-      novoFilho = filho
+    // Pesquisa se Nós já existem na Árvore
+    let refPai = this.pesquisaNo(pai)
+    let refFilho = this.pesquisaNo(filho)
+
+    // Caso Pai não exista, adiciona  Nó na raiz
+    if (!refPai) {
+      refPai = pai
+      this.raiz.addFilho(refPai)
+      refPai.pai = this.raiz
+      this.addIndice(refPai)
     }
 
-    if (this.raiz.pesquisaNoFilho(novoFilho)) {
-      this.raiz.delFilho(novoFilho)
+    // Caso filho não exista, pega referência do Nó recebido por parâmetro
+    if (!refFilho) {
+      refFilho = filho
     }
-    novoPai.addFilho(novoFilho)
-    novoFilho.pai = novoPai
-    this.addIndice(novoFilho)
+
+    // Caso filho já exista na raiz, remove referência da raiz
+    if (this.raiz.pesquisaNoFilho(refFilho)) {
+      this.raiz.delFilho(refFilho)
+    }
+
+    // Atualiza pai e filho
+    refPai.addFilho(refFilho)
+    refFilho.pai = refPai
+
+    // Adiciona Índice
+    this.addIndice(refFilho)
   }
 
   del (no: No | null): void {
     if (!no) return
     if (!no.pai) return
 
+    // Armazena referência do Pai do Nó a ser removido
     const pai = no.pai
+
+    // Remove Nó
     pai.delFilho(no)
+
+    // Remove do Índice
     this.delIndice(no)
 
+    // Atualiza referências de Pai e Filhos
     for (const key in no.filhos) {
       if (Object.prototype.hasOwnProperty.call(no.filhos, key)) {
         const filho = no.filhos[key]
@@ -127,7 +143,11 @@ export class Arvore {
   }
 
   getPrioridade (): No[] {
-    return Object.keys(this.raiz.filhos).map(key => this.raiz.filhos[key]).sort(this.fnPrioridade)
+    // Monta lista de referências a partir dos filhos da raiz e
+    // ordena por critério selecionado
+    return Object.keys(this.raiz.filhos)
+      .map(key => this.raiz.filhos[key])
+      .sort(this.fnPoliticaPrioridade)
   }
 
   addIndice (no: No): void {
@@ -140,10 +160,6 @@ export class Arvore {
 
   pesquisaNo (no: No): No | null {
     return this.indice[no.valor]
-  }
-
-  pesquisaValor (valor: string): No | null {
-    return this.indice[valor]
   }
 }
 
@@ -185,25 +201,22 @@ export class Processador {
   }
 
   executar (processo: Processo): void {
-    if (!this.estaLivre()) {
-      throw new Error('Processador Ocupado!')
-    }
-
     this.processo = processo
     // console.log(`[CPU${this.id}]${this.processo.toString()} iniciou!`)
   }
 
-  tick (qntTicks?: number): Processo | null {
+  tick (): Processo | null {
     if (this.estaLivre()) return null
+    this.ticks++
 
-    this.ticks += qntTicks || 1
-
+    // Caso Processo tenha finalizado,
+    // reseta informações do Processador e retorna
+    // informações do Processo
     if (this.ticks === this.processo?.ticks) {
       // console.log(`[CPU${this.id}]${this.processo.toString()} finalizado!`)
       const aux = this.processo
       this.processo = null
       this.ticks = 0
-
       return aux
     }
     return null
@@ -211,10 +224,5 @@ export class Processador {
 
   estaLivre (): boolean {
     return !this.processo
-  }
-
-  ticksRestantes (): number {
-    if (!this.processo) return 0
-    return this.processo.ticks - this.ticks
   }
 }
